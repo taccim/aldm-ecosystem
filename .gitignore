@@ -1,0 +1,14 @@
+
+DEV/
+GIT_SHA
+MANUAL.tar
+MANUAL/
+VERSION
+_aldm-scripts.tgz
+construct.cfg.ORIG
+construct.sh.ORIG
+dce-scripts.tgz
+diff.txt
+*.tgz
+*.zip
+*.bzip
