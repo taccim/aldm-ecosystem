@@ -54,7 +54,7 @@
 2. edit the construct.cfg file for your suit your local environment, in most cases you will not need to change the ID,URL or REPO location
    
 	> LOCAL_REPO_ROOT=\"$HOME/ALDM/CODE_build/ALDM2.0\"  # the root of where you start your builds and git repo clones <br>
-        > ID=        #  your git id \(typically git@github.ibm.com\) <br>
+    > ID=        #  your git id \(typically git@github.ibm.com\) <br>
 	> URL=       #  the URL of the git repository <br>
 	> REPO=      #  the shortname of the git repo \(i.e. owner/repo\) <br>
 	> DIR=       #  the full path name of the directory after the the repo is cloned <br>
