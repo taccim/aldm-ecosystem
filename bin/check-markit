@@ -1,0 +1,192 @@
+#!/bin/bash
+#	check-markit  3.212.517  2019-05-27T17:06:49.252530-05:00 (CDT)  https://github.com/BradleyA/markit  uadmin  one-rpi3b.cptx86.com 3.211-1-gb4a50e6  
+#	   create new release 
+#	check-markit  3.152.312  2019-01-19T23:26:41.427091-06:00 (CST)  https://github.com/BradleyA/markit.git  uadmin  six-rpi3b.cptx86.com 3.151  
+#	   production standard 4 update display_help LANGUAGE close #58 
+#	check-markit  3.151.311  2019-01-19T23:06:27.618171-06:00 (CST)  https://github.com/BradleyA/markit.git  uadmin  six-rpi3b.cptx86.com 3.150-2-gc8d1aa7  
+#	   add section for bitbucket check-markit include Bitbucket repository close #37 
+#	check-markit  3.142.298  2018-11-16T22:54:42.684623-06:00 (CST)  https://github.com/BradleyA/markit  uadmin  one-rpi3b.cptx86.com 3.141  
+#	   check-markit run shellcheck to clean up future minor incidents close #52 
+#	check-markit  3.141.297  2018-11-16T22:38:39.377007-06:00 (CST)  https://github.com/BradleyA/markit  uadmin  one-rpi3b.cptx86.com 3.140  
+#	   check-markit change log format and order close #54 
+#	check-markit  3.140.296  2018-11-16T22:11:04.531662-06:00 (CST)  https://github.com/BradleyA/markit  uadmin  one-rpi3b.cptx86.com 3.139  
+#	   check-markit Order of precedence: add support for environment variable (export DEBUG=1), default code close #53 
+#
+### check-markit - check file release with repository release
+#       Copyright (c) 2019 Bradley Allen
+#       License is in the online DOCUMENTATION, DOCUMENTATION URL defined below.
+###
+#   production standard 5
+#       Order of precedence: environment variable (export DEBUG=1), default code
+if [ "${DEBUG}" == "" ] ; then DEBUG="0" ; fi   # 0 = debug off, 1 = debug on, 'unset DEBUG' to unset environment variable (bash)
+#	set -x
+#	set -v
+BOLD=$(tput -Txterm bold)
+NORMAL=$(tput -Txterm sgr0)
+#
+display_help() {
+echo -e "\n${NORMAL}${0} - check file release with repository release"
+echo -e "\nUSAGE\n   ${0} [<FILE_NAME>]"
+echo    "   ${0} [--file <PATH>/<FILE_NAME> | -f <PATH>/<FILE_NAME>]"
+echo    "   ${0} [--help | -help | help | -h | h | -? | ?]"
+echo    "   ${0} [--version | -version | -v]"
+echo -e "\nDESCRIPTION"
+#       Displaying help DESCRIPTION in English en_US.UTF-8
+echo    "Check the release of a file that was marked using markit with the GitHub"
+echo    "repository or Bitbucket repository or GitLab project release.  Check-markit may"
+echo    "require --file option to include the relative or absolute path with the file name."
+echo -e "\nCheck-markit only works on files that are marked after 2018-02-27."
+echo -e "\nCheck-markit only works with markit files that used the https:// URLs for"
+echo    "GitHub, Bitbucket, and GitLab repositories.  Check-markit does not currently"
+echo    "support files with SSH URLs for GitHub, Bitbucket, and GitLab repositories."
+#       Displaying help DESCRIPTION in French fr_CA.UTF-8, fr_FR.UTF-8, fr_CH.UTF-8
+if [ "${LANG}" == "fr_CA.UTF-8" ] || [ "${LANG}" == "fr_FR.UTF-8" ] || [ "${LANG}" == "fr_CH.UTF-8" ] ; then
+        echo -e "\n--> ${LANG}"
+        echo    "<votre aide va ici>" # your help goes here
+        echo    "Souhaitez-vous traduire la section description?" # Do you want to translate the description section?
+elif ! [ "${LANG}" == "en_US.UTF-8" ] ; then
+        get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[WARN]${NORMAL}  Your language, ${LANG}, is not supported.  Would you like to translate the description section?" 1>&2
+fi
+echo -e "\nEnvironment Variables"
+echo    "If using the bash shell, enter; 'export DEBUG=1' on the command line to set"
+echo    "the DEBUG environment variable to '1' (0 = debug off, 1 = debug on).  Use the"
+echo    "command, 'unset DEBUG' to remove the exported information from the DEBUG"
+echo    "environment variable.  You are on your own defining environment variables if"
+echo    "you are using other shells."
+echo    "   DEBUG       (default '0')"
+echo -e "\nOPTIONS\n   -f, --file\n      path and file on system '<path>/<file_name>'"
+echo -e "\nDOCUMENTATION\n   https://github.com/BradleyA/markit"
+echo -e "\nEXAMPLES\n   Check file named sample.c release in relative path testfile/ with\n   repository release.\n\n   check-markit -f testfiles/sample.c"
+echo -e "\n   Check file named markit release with repository release.\n\n   check-markit markit\n"
+}
+
+#       Date and time function ISO 8601
+get_date_stamp() {
+DATE_STAMP=$(date +%Y-%m-%dT%H:%M:%S.%6N%:z)
+TEMP=$(date +%Z)
+DATE_STAMP="${DATE_STAMP} (${TEMP})"
+}
+
+#       Fully qualified domain name FQDN hostname
+LOCALHOST=$(hostname -f)
+
+#       Version
+SCRIPT_NAME=$(head -2 "${0}" | awk {'printf $2'})
+SCRIPT_VERSION=$(head -2 "${0}" | awk {'printf $3'})
+
+#       UID and GID
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+
+#       Default help and version arguments
+if [ "$1" == "--help" ] || [ "$1" == "-help" ] || [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "h" ] || [ "$1" == "-?" ] ; then
+        display_help | more
+        exit 0
+fi
+if [ "$1" == "--version" ] || [ "$1" == "-version" ] || [ "$1" == "version" ] || [ "$1" == "-v" ] ; then
+        echo "${SCRIPT_NAME} ${SCRIPT_VERSION}"
+        exit 0
+fi
+
+#       INFO
+get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[INFO]${NORMAL}  Started..." 1>&2
+
+#       DEBUG
+if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  Name_of_command >${0}< Name_of_arg1 >${1}< Name_of_arg2 >${2}< Name_of_arg3 >${3}<  Version of bash ${BASH_VERSION}" 1>&2 ; fi
+
+###
+#       Check if argument 1 is blank
+if [ "${1}" == "" ] ; then
+	display_help | more
+	get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[ERROR]${NORMAL}  File not found on command line" 1>&2
+	exit 0
+fi
+
+#	Check if argument 1 is -f or --file
+if [ "${1}" == "--file" ] || [ "${1}" == "-f" ] ; then
+	#       Check if argument 2 is blank
+	if [ "${2}" == "" ] ; then
+		display_help | more
+		get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[ERROR]${NORMAL}  File name not found; --file <path>/<file_name> or -f <path>/<file_name> option" 1>&2
+		exit 0
+	fi
+	MARKIT_FILE=${2}
+else
+	#	Locate file in the PATH
+	TEMP=$(whereis "${1}")
+	MARKIT_FILE=$(echo "${TEMP}" | awk {'print $2'} )
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  Locate file in the PATH... MARKIT_FILE >${MARKIT_FILE}<" 1>&2 ; fi
+	#       Check if MARKIT_FILE is blank
+	if [ "${MARKIT_FILE}" == "" ] ; then
+		display_help | more
+		get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[ERROR]${NORMAL}  ${1} not found; use --file <path>/<file_name> or -f <path>/<file_name> option" 1>&2
+		exit 0
+	fi
+fi
+
+#	Parse file name from MARKIT_FILE
+FILE_NAME=$(echo "${MARKIT_FILE}" | sed 's/.*\///')
+#       Check if file exists and has a size greater than zero || if file exists and is readable
+if [ ! -s "${MARKIT_FILE}" ] || [ ! -r "${MARKIT_FILE}" ] ; then
+	get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[ERROR]${NORMAL}  ${MARKIT_FILE} file is not found or is empty or is not readable" 1>&2
+	exit 1
+fi
+REPOSITORY_COMMAND=$(grep git "${MARKIT_FILE}" | grep -m 1 "${FILE_NAME}" | awk {'print$6'} | sed 's/\.git$//')
+MARKIT_FILE_RELEASE=$(grep git "${MARKIT_FILE}" | grep -m 1 "${FILE_NAME}" | awk {'print$3'})
+MARKIT_FILE_DATE=$(grep git "${MARKIT_FILE}" | grep -m 1 "${FILE_NAME}" | awk {'print$4'})
+#
+if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  MARKIT_FILE >${MARKIT_FILE}< FILE_NAME >${FILE_NAME}< REPOSITORY_COMMAND >${REPOSITORY_COMMAND}< MARKIT_FILE_RELEASE >${MARKIT_FILE_RELEASE}<" 1>&2 ; fi
+
+#	Check file to determine if it was marked before markit release 3.10.142 2018-02-27.
+if ! grep -q "https" <<< ${REPOSITORY_COMMAND}  ; then
+	get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[ERROR]${NORMAL}  ${MARKIT_FILE} is not marked with markit or the --file option was not used or git origin did not include https address (git remote -v) when marked or file was marked after 2018-02-27." 1>&2
+	exit
+fi
+
+###
+#	need to make sure that script is able to contact GitHib or Bitbucket or GitLab before using curl
+#	add a test
+###
+###	Determine name of repository
+if grep -q "github" <<< ${REPOSITORY_COMMAND} ; then
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  Checking GitHub for ${BOLD}${FILE_NAME}${NORMAL} repository release information" 1>&2 ; fi
+	REPOSITORY_COMMAND=$(echo "${REPOSITORY_COMMAND}" | sed 's/github.com/api.github.com\/repos/')
+	REPOSITORY_COMMAND="curl \-L ${REPOSITORY_COMMAND}/tarball | tar --directory /tmp/markit-temp -xzf - "
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  REPOSITORY_COMMAND >${REPOSITORY_COMMAND}<" 1>&2 ; fi
+elif grep -q "gitlab" <<< ${REPOSITORY_COMMAND} ; then
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  Checking GitLab for ${BOLD}${FILE_NAME}${NORMAL} repository release information" 1>&2 ; fi
+	REPOSITORY_PROJECT_NAME=$(echo "${REPOSITORY_COMMAND}" | sed 's/^https:\/\/.*\/.*\///' | sed 's/\.git$//')
+	REPOSITORY_COMMAND=$(echo "${REPOSITORY_COMMAND}" | sed 's/\.git$/\/-\/archive\/master\//')
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  MARKIT_FILE >${MARKIT_FILE}< FILE_NAME >${FILE_NAME}< REPOSITORY_COMMAND >${REPOSITORY_COMMAND}< MARKIT_FILE_RELEASE >${MARKIT_FILE_RELEASE}<" 1>&2 ; fi
+	REPOSITORY_COMMAND="curl \-L ${REPOSITORY_COMMAND}${REPOSITORY_PROJECT_NAME}-master.tar.gz | tar --directory /tmp/markit-temp -xzf - "
+elif grep -q "bitbucket" <<< ${REPOSITORY_COMMAND} ; then
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  Checking Bitbucket for ${BOLD}${FILE_NAME}${NORMAL} repository release information" 1>&2 ; fi
+	REPOSITORY_COMMAND=$(echo "${REPOSITORY_COMMAND}" | sed 's/\/\/.*@/\/\//')
+	REPOSITORY_COMMAND=$(echo "curl \-L ${REPOSITORY_COMMAND}/get/master.zip -o /tmp/markit-temp/master.zip ; unzip -qq /tmp/markit-temp/master.zip -d /tmp/markit-temp/")
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  REPOSITORY_COMMAND >${REPOSITORY_COMMAND}<" 1>&2 ; fi
+else 
+	if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  MARKIT_FILE >${MARKIT_FILE}< FILE_NAME >${FILE_NAME}< REPOSITORY_COMMAND >${REPOSITORY_COMMAND}< MARKIT_FILE_RELEASE >${MARKIT_FILE_RELEASE}<" 1>&2 ; fi
+	echo    ">>>> Repository using SSH URLs  <<<<<"
+	echo    ">>>> or other repository like bitbucket, Codebase, Assembla, Fog Creek Kiln, etc   <<<<<"
+	exit
+fi
+###
+if [ "${DEBUG}" == "1" ] ; then get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[DEBUG]${NORMAL}  MARKIT_FILE >${MARKIT_FILE}< FILE_NAME >${FILE_NAME}< REPOSITORY_COMMAND >${REPOSITORY_COMMAND}< MARKIT_FILE_RELEASE >${MARKIT_FILE_RELEASE}<" 1>&2 ; fi
+#       Check if /tmp/markit-temp directory exists; remove it because of previous use of script failed
+if [ -d /tmp/markit-temp ] ; then
+	rm -rf /tmp/markit-temp
+fi
+#
+mkdir /tmp/markit-temp
+eval "${REPOSITORY_COMMAND}"
+REPOSITORY_FILE_NAME_LOCATION=$(find /tmp/markit-temp -type f -name "${FILE_NAME}" -print)
+REPOSITORY_MARKIT_FILE_RELEASE=$(grep git "${REPOSITORY_FILE_NAME_LOCATION}" | grep -m 1 "${FILE_NAME}" | awk {'print$3'})
+REPOSITORY_MARKIT_FILE_DATE=$(grep git "${REPOSITORY_FILE_NAME_LOCATION}" | grep -m 1 "${FILE_NAME}" | awk {'print$4'})
+rm -rf /tmp/markit-temp
+###
+echo -e "\n  ${MARKIT_FILE} release ${BOLD}${MARKIT_FILE_RELEASE}${NORMAL}, commit date ${MARKIT_FILE_DATE}" 1>&2
+echo -e "\n  ${FILE_NAME} repository release ${BOLD}${REPOSITORY_MARKIT_FILE_RELEASE}${NORMAL}, commit date ${REPOSITORY_MARKIT_FILE_DATE}\n" 1>&2
+
+#
+get_date_stamp ; echo -e "${NORMAL}${DATE_STAMP} ${LOCALHOST} ${0}[$$] ${SCRIPT_VERSION} ${LINENO} ${USER} ${USER_ID}:${GROUP_ID} ${BOLD}[INFO]${NORMAL}  Operation finished." 1>&2
+###

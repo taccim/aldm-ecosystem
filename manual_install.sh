@@ -1,0 +1,1 @@
+MANUAL/manual_install.sh

@@ -1,0 +1,14 @@
+./instance_install.sh
+./ibm_instance.cfg
+./construct.cfg
+./construct.sh
+./bin/get_parname.pl
+./bin/git-ssh.sh
+./bin/git.sh
+./build_installer.sh
+./rpm_dependencies.sh
+./aldm-scripts/aldm-start.sh
+./aldm-scripts/deploy-config.sh
+./MANUAL/USERS/ALDM_users_install.sh
+./MANUAL/USERS/instance_install.sh
+./MANUAL/manual_install.sh
